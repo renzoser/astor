@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Astor Impresión — Imprimí lo que imaginás</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal: #1A7A8A;
+    --teal-dark: #115f6d;
+    --magenta: #E8197C;
+    --yellow: #F5A623;
+    --black: #111111;
+    --cream: #F2EDE4;
+    --white: #FFFFFF;
+    --ink: #1C1C1C;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    overflow-x: hidden;
+  }
+
+  /* ── COUNTRY SELECTOR SCREEN ── */
+  #selector-screen {
+    position: fixed;
+    inset: 0;
+    background: var(--black);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+
+  #selector-screen.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-20px);
+  }
+
+  .selector-logo {
+    margin-bottom: 2.5rem;
+    text-align: center;
+  }
+
+  .logo-a {
+    display: inline-block;
+    width: 72px;
+    height: 72px;
+    background: var(--teal);
+    clip-path: polygon(50% 0%, 0% 100%, 15% 100%, 50% 15%, 85% 100%, 100% 100%);
+    margin-bottom: 0.75rem;
+  }
+
+  .logo-text {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.5rem;
+    letter-spacing: 0.15em;
+    color: var(--white);
+    text-transform: uppercase;
+  }
+
+  .logo-sub {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 400;
+    font-size: 0.85rem;
+    letter-spacing: 0.3em;
+    color: var(--teal);
+    text-transform: uppercase;
+  }
+
+  .selector-pregunta {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: clamp(1.4rem, 5vw, 2rem);
+    color: var(--white);
+    text-align: center;
+    margin-bottom: 2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .selector-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .btn-pais {
+    padding: 1.5rem 1rem;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.3rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .btn-pais .flag { font-size: 2.5rem; }
+
+  .btn-arg {
+    background: var(--teal);
+    color: var(--white);
+  }
+  .btn-arg:hover { background: var(--teal-dark); transform: scale(1.03); }
+
+  .btn-uy {
+    background: var(--magenta);
+    color: var(--white);
+  }
+  .btn-uy:hover { background: #c8156a; transform: scale(1.03); }
+
+  /* ── MAIN SITE ── */
+  #main-site { display: none; }
+  #main-site.visible { display: block; }
+
+  /* NAV */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--black);
+    padding: 0.9rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+  }
+
+  .nav-logo-a {
+    width: 32px;
+    height: 32px;
+    background: var(--teal);
+    clip-path: polygon(50% 0%, 0% 100%, 15% 100%, 50% 15%, 85% 100%, 100% 100%);
+    flex-shrink: 0;
+  }
+
+  .nav-logo-text {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.1rem;
+    letter-spacing: 0.12em;
+    color: var(--white);
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  .nav-logo-sub {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--teal);
+    font-weight: 400;
+  }
+
+  .nav-pais {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--yellow);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: none;
+    border: 1px solid var(--yellow);
+    padding: 0.35rem 0.75rem;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .nav-pais:hover { background: var(--yellow); color: var(--black); }
+
+  /* HERO */
+  .hero {
+    background: var(--black);
+    padding: 3.5rem 1.5rem 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: 'A';
+    position: absolute;
+    right: -0.1em;
+    top: -0.15em;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: clamp(12rem, 40vw, 22rem);
+    color: rgba(26, 122, 138, 0.08);
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .hero-eyebrow {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.3em;
+    color: var(--teal);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  .hero-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: clamp(2.8rem, 12vw, 6rem);
+    line-height: 0.9;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 0.3rem;
+  }
+
+  .hero-title .accent { color: var(--teal); }
+  .hero-title .accent-mag { color: var(--magenta); }
+
+  .hero-sub {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 400;
+    font-size: clamp(1rem, 3.5vw, 1.4rem);
+    color: rgba(255,255,255,0.65);
+    margin: 1.2rem 0 2rem;
+    max-width: 340px;
+    line-height: 1.4;
+  }
+
+  .hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: var(--magenta);
+    color: var(--white);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.1rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 1rem 1.8rem;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+  }
+  .hero-cta:hover { background: #c8156a; transform: translateY(-2px); }
+
+  .hero-cta-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: transparent;
+    color: var(--white);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 1rem 1.5rem;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.2s;
+    border: 2px solid rgba(255,255,255,0.25);
+    margin-left: 0.75rem;
+    cursor: pointer;
+  }
+  .hero-cta-secondary:hover { border-color: var(--white); }
+
+  .hero-btns { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+
+  .hero-data {
+    display: flex;
+    gap: 2rem;
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .hero-stat-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 2rem;
+    color: var(--yellow);
+    line-height: 1;
+  }
+
+  .hero-stat-label {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 0.2rem;
+  }
+
+  /* TAPE STRIP — elemento signature */
+  .tape-strip {
+    background: var(--magenta);
+    padding: 0.75rem 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .tape-inner {
+    display: inline-block;
+    animation: marquee 18s linear infinite;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--white);
+  }
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* PRODUCTS */
+  .section { padding: 3rem 1.5rem; }
+
+  .section-eyebrow {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    color: var(--teal);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .section-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    line-height: 0.95;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+  }
+
+  .products-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  @media (min-width: 600px) {
+    .products-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  .product-card {
+    background: var(--white);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .product-card:hover { transform: translateY(-3px); }
+
+  .product-card-color {
+    height: 6px;
+  }
+
+  .product-card-body {
+    padding: 1.1rem 1rem 1.2rem;
+  }
+
+  .product-icon {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  .product-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.05rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    line-height: 1.1;
+    margin-bottom: 0.35rem;
+  }
+
+  .product-desc {
+    font-size: 0.75rem;
+    color: #666;
+    line-height: 1.4;
+    margin-bottom: 0.75rem;
+  }
+
+  .product-cta {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--teal);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  /* ABOUT STRIP */
+  .about-strip {
+    background: var(--teal);
+    padding: 3rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .about-strip::after {
+    content: '';
+    position: absolute;
+    right: -2rem;
+    bottom: -2rem;
+    width: 180px;
+    height: 180px;
+    background: rgba(0,0,0,0.1);
+    border-radius: 50%;
+  }
+
+  .about-strip .section-title { color: var(--white); }
+
+  .about-strip p {
+    color: rgba(255,255,255,0.85);
+    font-size: 1rem;
+    line-height: 1.6;
+    max-width: 480px;
+    margin-bottom: 1.5rem;
+  }
+
+  .about-strip strong { color: var(--yellow); }
+
+  /* CONTACT */
+  .contact-section {
+    background: var(--black);
+    padding: 3rem 1.5rem;
+  }
+
+  .contact-section .section-title { color: var(--white); }
+
+  .contact-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .contact-card {
+    border-radius: 6px;
+    padding: 1.5rem 1.2rem;
+    text-decoration: none;
+    transition: transform 0.2s;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .contact-card:hover { transform: translateY(-3px); }
+
+  .contact-card.arg { background: var(--teal); }
+  .contact-card.uy  { background: var(--magenta); }
+
+  .contact-card-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 400;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .contact-card-country {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.3rem;
+    text-transform: uppercase;
+    color: var(--white);
+    letter-spacing: 0.05em;
+  }
+
+  .contact-card-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: rgba(255,255,255,0.9);
+    margin-top: 0.3rem;
+  }
+
+  .contact-card-wa {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.7);
+    margin-top: 0.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  /* INSTAGRAM */
+  .ig-section {
+    background: var(--cream);
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    border-top: 4px solid var(--yellow);
+  }
+
+  .ig-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--black);
+    text-decoration: none;
+    border-bottom: 3px solid var(--magenta);
+    padding-bottom: 0.1rem;
+    transition: color 0.2s;
+  }
+  .ig-link:hover { color: var(--magenta); }
+
+  /* FOOTER */
+  footer {
+    background: var(--black);
+    padding: 1.5rem;
+    text-align: center;
+    border-top: 3px solid var(--teal);
+  }
+
+  footer p {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+  }
+
+  /* FLOATING WA BUTTON */
+  .wa-float {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 200;
+    width: 58px;
+    height: 58px;
+    background: #25D366;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    box-shadow: 0 4px 20px rgba(37,211,102,0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .wa-float:hover { transform: scale(1.1); box-shadow: 0 6px 28px rgba(37,211,102,0.5); }
+
+  .wa-float svg { width: 30px; height: 30px; fill: white; }
+
+  /* SCROLL REVEAL */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .reveal.visible { opacity: 1; transform: none; }
+</style>
+</head>
+<body>
+
+<!-- ── SELECTOR DE PAÍS ── -->
+<div id="selector-screen">
+  <div class="selector-logo">
+    <div class="logo-a"></div>
+    <div class="logo-text">Astor</div>
+    <div class="logo-sub">Impresión</div>
+  </div>
+  <p class="selector-pregunta">¿Desde dónde nos escribís?</p>
+  <div class="selector-btns">
+    <button class="btn-pais btn-arg" onclick="elegirPais('AR')">
+      <span class="flag">🇦🇷</span>
+      Argentina
+    </button>
+    <button class="btn-pais btn-uy" onclick="elegirPais('UY')">
+      <span class="flag">🇺🇾</span>
+      Uruguay
+    </button>
+  </div>
+</div>
+
+<!-- ── SITIO PRINCIPAL ── -->
+<div id="main-site">
+
+  <nav>
+    <a href="#" class="nav-logo" onclick="volverSelector(event)">
+      <div class="nav-logo-a"></div>
+      <div>
+        <div class="nav-logo-text">Astor</div>
+        <div class="nav-logo-sub">Impresión</div>
+      </div>
+    </a>
+    <button class="nav-pais" id="nav-pais-btn" onclick="volverSelector(event)">🇦🇷 Argentina</button>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-eyebrow">+20 años imprimiendo</div>
+    <h1 class="hero-title">
+      IMPRIMÍ<br>
+      LO QUE<br>
+      <span class="accent-mag">IMAGINÁS.</span>
+    </h1>
+    <p class="hero-sub" id="hero-sub">Tu marca en manos reales. Blocks, vinilos, lonas y más — desde Paraná para todo el país.</p>
+    <div class="hero-btns">
+      <a href="#" class="hero-cta" id="hero-cta-wa">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.557 4.126 1.532 5.862L.054 23.854a.5.5 0 00.613.613l6.011-1.577A11.942 11.942 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.95 9.95 0 01-5.127-1.416l-.368-.217-3.807.998.998-3.75-.237-.388A9.945 9.945 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+        Pedí por WhatsApp
+      </a>
+      <a href="#productos" class="hero-cta-secondary">Ver productos</a>
+    </div>
+    <div class="hero-data">
+      <div>
+        <div class="hero-stat-num">+20</div>
+        <div class="hero-stat-label">Años en el rubro</div>
+      </div>
+      <div>
+        <div class="hero-stat-num">2</div>
+        <div class="hero-stat-label">Países</div>
+      </div>
+      <div>
+        <div class="hero-stat-num">∞</div>
+        <div class="hero-stat-label">Proyectos listos</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAPE MARQUEE -->
+  <div class="tape-strip" aria-hidden="true">
+    <span class="tape-inner">
+      BLOCKS &nbsp;·&nbsp; TALONARIOS &nbsp;·&nbsp; RECETARIOS &nbsp;·&nbsp; VINILOS UV &nbsp;·&nbsp; LONAS &nbsp;·&nbsp; BANNERS &nbsp;·&nbsp; FOLLETOS &nbsp;·&nbsp; TARJETAS &nbsp;·&nbsp; FIGURITAS &nbsp;·&nbsp; IMPRESIÓN DIGITAL &nbsp;·&nbsp;&nbsp;
+      BLOCKS &nbsp;·&nbsp; TALONARIOS &nbsp;·&nbsp; RECETARIOS &nbsp;·&nbsp; VINILOS UV &nbsp;·&nbsp; LONAS &nbsp;·&nbsp; BANNERS &nbsp;·&nbsp; FOLLETOS &nbsp;·&nbsp; TARJETAS &nbsp;·&nbsp; FIGURITAS &nbsp;·&nbsp; IMPRESIÓN DIGITAL &nbsp;·&nbsp;
+    </span>
+  </div>
+
+  <!-- PRODUCTOS -->
+  <section class="section" id="productos">
+    <div class="section-eyebrow">Catálogo</div>
+    <h2 class="section-title reveal">Lo que<br>hacemos.</h2>
+    <div class="products-grid">
+
+      <div class="product-card reveal">
+        <div class="product-card-color" style="background: var(--teal)"></div>
+        <div class="product-card-body">
+          <span class="product-icon">📋</span>
+          <div class="product-name">Blocks</div>
+          <div class="product-desc">Con tu logo y datos. Profesionales, con o sin microperforado.</div>
+          <a href="#" class="product-cta" onclick="abrirWA('Hola! Me interesa consultar por Blocks'); return false;">Consultar →</a>
+        </div>
+      </div>
+
+      <div class="product-card reveal">
+        <div class="product-card-color" style="background: var(--magenta)"></div>
+        <div class="product-card-body">
+          <span class="product-icon">🧾</span>
+          <div class="product-name">Talonarios</div>
+          <div class="product-desc">Facturas, remitos, recibos. Original y copia. Con tu diseño.</div>
+          <a href="#" class="product-cta" onclick="abrirWA('Hola! Me interesa consultar por Talonarios'); return false;">Consultar →</a>
+        </div>
+      </div>
+
+      <div class="product-card reveal">
+        <div class="product-card-color" style="background: var(--yellow)"></div>
+        <div class="product-card-body">
+          <span class="product-icon">💊</span>
+          <div class="product-name">Recetarios</div>
+          <div class="product-desc">Para profesionales de la salud. Claro, ordenado, profesional.</div>
+          <a href="#" class="product-cta" onclick="abrirWA('Hola! Me interesa consultar por Recetarios'); return false;">Consultar →</a>
+        </div>
+      </div>
+
+      <div class="product-card reveal">
+        <div class="product-card-color" style="background: var(--teal)"></div>
+        <div class="product-card-body">
+          <span class="product-icon">✨</span>
+          <div class="product-name">Vinilos UV</div>
+          <div class="product-desc">Stickers de alta calidad. Colores intensos y durables.</div>
+          <a href="#" class="product-cta" onclick="abrirWA('Hola! Me interesa consultar por Vinilos UV'); return false;">Consultar →</a>
+        </div>
+      </div>
+
+      <div class="product-card reveal">
+        <div class="product-card-color" style="background: var(--magenta)"></div>
+        <div class="product-card-body">
+          <span class="product-icon">🏔️</span>
+          <div class="product-name">Lonas</div>
+          <div class="product-desc">Gran formato para locales, eventos y vía pública.</div>
+          <a href="#" class="product-cta" onclick="abrirWA('Hola! Me interesa consultar por Lonas'); return false;">Consultar →</a>
+        </div>
+      </div>
+
+      <div class="product-card reveal">
+        <div class="product-card-color" style="background: var(--yellow)"></div>
+        <div class="product-card-body">
+          <span class="product-icon">📰</span>
+          <div class="product-name">Folletos</div>
+          <div class="product-desc">10x15, A5, A4. Full color, papel premium.</div>
+          <a href="#" class="product-cta" onclick="abrirWA('Hola! Me interesa consultar por Folletos'); return false;">Consultar →</a>
+        </div>
+      </div>
+
+      <div class="product-card reveal">
+        <div class="product-card-color" style="background: var(--teal)"></div>
+        <div class="product-card-body">
+          <span class="product-icon">💼</span>
+          <div class="product-name">Tarjetas</div>
+          <div class="product-desc">Personales y comerciales. Dejá tu mejor cara.</div>
+          <a href="#" class="product-cta" onclick="abrirWA('Hola! Me interesa consultar por Tarjetas'); return false;">Consultar →</a>
+        </div>
+      </div>
+
+      <div class="product-card reveal">
+        <div class="product-card-color" style="background: var(--magenta)"></div>
+        <div class="product-card-body">
+          <span class="product-icon">⭐</span>
+          <div class="product-name">Figuritas</div>
+          <div class="product-desc">Personalizadas, para álbumes y colecciones. Papel premium.</div>
+          <a href="#" class="product-cta" onclick="abrirWA('Hola! Me interesa consultar por Figuritas personalizadas'); return false;">Consultar →</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="about-strip reveal">
+    <div class="section-eyebrow" style="color: var(--yellow)">Quiénes somos</div>
+    <h2 class="section-title">No es solo<br>imprimir.</h2>
+    <p>Es <strong>comunicar lo que sos</strong>. Hace más de 20 años que trabajamos con comercios, profesionales y emprendedores de Argentina y Uruguay para que su marca llegue en papel con calidad real.</p>
+    <p>Operamos en <strong>Paraná (Entre Ríos)</strong> y <strong>Playa Verde (Uruguay)</strong>. Enviamos a todo el país.</p>
+    <a href="#contacto" class="hero-cta" style="background: var(--yellow); color: var(--black);">Hablemos de tu proyecto</a>
+  </section>
+
+  <!-- CONTACTO -->
+  <section class="contact-section" id="contacto">
+    <div class="section-eyebrow" style="color: var(--teal)">Contacto</div>
+    <h2 class="section-title reveal" style="color: var(--white);">Elegí tu<br>país.</h2>
+    <div class="contact-cards reveal">
+      <a href="https://wa.me/543434299453" class="contact-card arg" target="_blank">
+        <div class="contact-card-label">🇦🇷 Argentina</div>
+        <div class="contact-card-country">Paraná</div>
+        <div class="contact-card-num">343 429 9453</div>
+        <div class="contact-card-wa">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.557 4.126 1.532 5.862L.054 23.854a.5.5 0 00.613.613l6.011-1.577A11.942 11.942 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.95 9.95 0 01-5.127-1.416l-.368-.217-3.807.998.998-3.75-.237-.388A9.945 9.945 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+          WhatsApp →
+        </div>
+      </a>
+      <a href="https://wa.me/59896093629" class="contact-card uy" target="_blank">
+        <div class="contact-card-label">🇺🇾 Uruguay</div>
+        <div class="contact-card-country">Playa Verde</div>
+        <div class="contact-card-num">096 093 629</div>
+        <div class="contact-card-wa">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.557 4.126 1.532 5.862L.054 23.854a.5.5 0 00.613.613l6.011-1.577A11.942 11.942 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.95 9.95 0 01-5.127-1.416l-.368-.217-3.807.998.998-3.75-.237-.388A9.945 9.945 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+          WhatsApp →
+        </div>
+      </a>
+    </div>
+    <p style="color: rgba(255,255,255,0.4); font-size:0.8rem; margin-top:1.5rem; text-align:center; font-family:'Barlow Condensed',sans-serif; letter-spacing:0.1em; text-transform:uppercase;">@astorgrafica &nbsp;·&nbsp; Instagram</p>
+  </section>
+
+  <!-- INSTAGRAM -->
+  <div class="ig-section reveal">
+    <p style="font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:0.85rem; letter-spacing:0.2em; text-transform:uppercase; color:#888; margin-bottom:0.75rem;">Seguinos en Instagram</p>
+    <a href="https://instagram.com/astorgrafica" target="_blank" class="ig-link">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+      @astorgrafica
+    </a>
+  </div>
+
+  <footer>
+    <p>© 2026 Astor Impresión &nbsp;·&nbsp; Paraná, AR &nbsp;·&nbsp; Playa Verde, UY</p>
+  </footer>
+
+  <!-- FLOATING WA -->
+  <a href="#" class="wa-float" id="wa-float-btn" target="_blank" aria-label="WhatsApp">
+    <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.557 4.126 1.532 5.862L.054 23.854a.5.5 0 00.613.613l6.011-1.577A11.942 11.942 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.95 9.95 0 01-5.127-1.416l-.368-.217-3.807.998.998-3.75-.237-.388A9.945 9.945 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+  </a>
+
+</div>
+
+<script>
+  const WA = {
+    AR: '543434299453',
+    UY: '59896093629'
+  };
+
+  let paisActual = null;
+
+  function elegirPais(pais) {
+    paisActual = pais;
+    const screen = document.getElementById('selector-screen');
+    const site = document.getElementById('main-site');
+    const navBtn = document.getElementById('nav-pais-btn');
+    const heroSub = document.getElementById('hero-sub');
+    const waFloat = document.getElementById('wa-float-btn');
+    const heroCta = document.getElementById('hero-cta-wa');
+
+    screen.classList.add('hidden');
+    setTimeout(() => { screen.style.display = 'none'; }, 400);
+    site.classList.add('visible');
+
+    if (pais === 'AR') {
+      navBtn.textContent = '🇦🇷 Argentina';
+      heroSub.textContent = 'Tu marca en manos reales. Blocks, vinilos, lonas y más — desde Paraná para todo el país.';
+    } else {
+      navBtn.textContent = '🇺🇾 Uruguay';
+      heroSub.textContent = 'Calidad que impulsa tu marca. Blocks, vinilos, lonas y más — desde Playa Verde para todo el Uruguay.';
+    }
+
+    const waUrl = `https://wa.me/${WA[pais]}?text=Hola%20Astor%2C%20vi%20su%20web%20y%20me%20gustar%C3%ADa%20consultar%20por%20sus%20productos.`;
+    waFloat.href = waUrl;
+    heroCta.href = waUrl;
+
+    // Trigger scroll reveals
+    observeReveal();
+  }
+
+  function volverSelector(e) {
+    e.preventDefault();
+    const screen = document.getElementById('selector-screen');
+    const site = document.getElementById('main-site');
+    screen.style.display = 'flex';
+    screen.classList.remove('hidden');
+    site.classList.remove('visible');
+  }
+
+  function abrirWA(texto) {
+    const num = WA[paisActual] || WA.AR;
+    const msg = encodeURIComponent(`Hola Astor! ${texto}.`);
+    window.open(`https://wa.me/${num}?text=${msg}`, '_blank');
+  }
+
+  function observeReveal() {
+    const items = document.querySelectorAll('.reveal');
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    items.forEach(el => obs.observe(el));
+  }
+</script>
+</body>
+</html>
